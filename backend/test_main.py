@@ -12,3 +12,12 @@ def test_inicio():
     assert respuesta.json() == {
         "mensaje": "TaskFlow API funcionando correctamente"
     }
+
+
+def test_health():
+    respuesta = client.get("/health")
+
+    assert respuesta.status_code == 200
+    assert respuesta.json() == {
+        "status": "ok"
+    }
