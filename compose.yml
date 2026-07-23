@@ -1,0 +1,10 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    image: taskflow-backend:1.0
+    container_name: taskflow-backend
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
