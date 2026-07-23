@@ -33,3 +33,6 @@ jobs:
 
       - name: Ejecutar pruebas automáticas
         run: python -m pytest backend/test_main.py -v
+
+      - name: Construir imagen Docker
+        run: docker build -f backend/Dockerfile -t taskflow-backend:ci .
