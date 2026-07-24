@@ -1,0 +1,11 @@
+---
+- name: Preparar herramientas basicas
+  hosts: controladores
+  become: true
+
+  tasks:
+    - name: Asegurar que tree este instalado
+      ansible.builtin.apt:
+        name: tree
+        state: present
+        update_cache: true
