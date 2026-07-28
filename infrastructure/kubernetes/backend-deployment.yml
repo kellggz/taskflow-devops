@@ -1,0 +1,43 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: taskflow-backend
+  labels:
+    app: taskflow-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: taskflow-backend
+  template:
+    metadata:
+      labels:
+        app: taskflow-backend
+    spec:
+      containers:
+        - name: taskflow-backend
+          image: ghcr.io/kellggz/taskflow-backend:latest
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8000
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
