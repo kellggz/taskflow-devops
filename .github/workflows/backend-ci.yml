@@ -53,3 +53,36 @@ jobs:
           docker tag taskflow-backend:ci "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"
           docker push "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
           docker push "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"
+
+  desplegar:
+    name: Desplegar en Kubernetes
+    if: github.event_name == 'push'
+    needs: pruebas
+    runs-on: [self-hosted, linux, x64]
+
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v6
+
+      - name: Aplicar manifiestos en Kubernetes
+        shell: bash
+        run: |
+          (
+            sed "s|ghcr.io/kellggz/taskflow-backend:latest|${REGISTRY}/${IMAGE_NAME}:${GITHUB_SHA}|" infrastructure/kubernetes/backend-deployment.yml
+            cat infrastructure/kubernetes/backend-service.yml
+          ) | ssh -o BatchMode=yes \
+            -i /home/devops/.ssh/ansible_ed25519 \
+            devops@192.168.207.11 \
+            'kubectl apply -f -'
+
+      - name: Esperar el despliegue
+        run: |
+          ssh -o BatchMode=yes \
+            -i /home/devops/.ssh/ansible_ed25519 \
+            devops@192.168.207.11 \
+            'kubectl rollout status deployment/taskflow-backend --timeout=180s'
+
+      - name: Verificar la salud del backend
+        run: |
+          curl --fail --retry 10 --retry-delay 5 \
+            http://192.168.207.11:30080/health
